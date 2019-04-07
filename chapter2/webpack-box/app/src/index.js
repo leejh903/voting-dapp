@@ -1,10 +1,12 @@
 import Web3 from "web3";
 import votingArtifact from "../../build/contracts/Voting.json";
 
+var candidates = {"Rama": "candidate-1", "Nick": "candidate-2", "Jose": "candidate-3"};
+var meta;
+
 const App = {
   web3: null,
   account: null,
-  meta: null,
 
   start: async function() {
     const { web3 } = this;
@@ -13,21 +15,37 @@ const App = {
       // get contract instance
       const networkId = await web3.eth.net.getId();
       const deployedNetwork = votingArtifact.networks[networkId];
-      this.meta = new web3.eth.Contract(
+
+      meta = new web3.eth.Contract(
         votingArtifact.abi,
-        deployedNetwork.address,
+        deployedNetwork.address
       );
 
       // get accounts
       const accounts = await web3.eth.getAccounts();
       this.account = accounts[0];
 
-      this.refreshBalance();
     } catch (error) {
       console.error("Could not connect to contract or chain.");
     }
 
-      
+    // load all cadidates and votes
+
+    // vote for a candidate
+      var candidateNames = Object.keys(candidates);
+  
+      for (var i = 0; i < candidateNames.length; i++) {
+        let name = candidateNames[i];
+        // meta.deployed().then(function(f) {
+        //   f.totalVotesFor.call(name).then(function(f) {
+        //     $("#" + candidates[name]).html(f.toNumber());
+        //   })
+        // })
+        meta.methods.totalVotesFor(web3.utils.asciiToHex(name)).call().then((f) => {
+          $("#" + candidates[name]).html(f);
+         })
+      }
+
   }
 };
 
